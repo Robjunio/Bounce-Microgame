@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,6 +7,7 @@ public class ChangeScene : MonoBehaviour
 {
     [SerializeField] private GameObject transitionObj;
     private Animator transitionAnimator;
+    [SerializeField] private TextMeshProUGUI text;
     
     private const string FadeIn = "FadeIn";
     private const string FadeOut = "FadeOut";
@@ -46,10 +48,14 @@ public class ChangeScene : MonoBehaviour
     {
         yield return FadeTransition(FadeIn);
         
+        text.gameObject.SetActive(true);
+        
         transitionObj.SetActive(true);
         transitionAnimator.Play("Idle");
         
         yield return SceneManager.LoadSceneAsync("Bounce-Gameplay");
+        
+        text.gameObject.SetActive(false);
 
         yield return FadeTransition(FadeOut);
     }
@@ -57,15 +63,19 @@ public class ChangeScene : MonoBehaviour
     public IEnumerator StartGameOver()
     {
         yield return FadeTransition(FadeIn);
-        
-        transitionObj.SetActive(true);
-        transitionAnimator.Play("Idle");
     }
 
     IEnumerator ChangeSceneWithTransition(string scene)
     {
+        text.gameObject.SetActive(true);
+        
+        transitionObj.SetActive(true);
+        transitionAnimator.Play("Idle");
+        
         yield return SceneManager.LoadSceneAsync(scene);
-
+        
+        text.gameObject.SetActive(false);
+        
         yield return FadeTransition(FadeOut);
     }
     
