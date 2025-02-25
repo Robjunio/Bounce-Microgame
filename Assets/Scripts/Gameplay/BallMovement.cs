@@ -23,32 +23,22 @@ public class BallMovement : MonoBehaviour
         _emitParams = new ParticleSystem.EmitParams();
     }
 
-    private void Update()
-    {
-        if (Application.isEditor)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                CheckIfHitTheArea();
-                EmitTouchEffect(Input.mousePosition);
-            }
-        }
-        else
-        {
-            if (Input.GetTouch(0).phase == TouchPhase.Began)
-            {
-                CheckIfHitTheArea();
-                EmitTouchEffect(Input.GetTouch(0).position);
-            }
-        }
-    }
-
-    private void CheckIfHitTheArea()
+    public void CheckIfHitTheArea()
     {
         if (loose)
         {
             return;
         }
+
+        if (Application.isEditor)
+        {
+           EmitTouchEffect(Input.mousePosition);
+        }
+        else
+        {
+            EmitTouchEffect(Input.GetTouch(0).position);
+        }
+
         RaycastHit2D hit = Physics2D.CircleCast(transform.position, _collider2D.radius * 1/3, Vector2.zero);
         if (hit.collider != null)
         {

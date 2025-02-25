@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private GameOverUI GameOverPanel;
+    [SerializeField] private GameObject PausePanel;
     public static GameController Instance;
 
     public Action HitTheZone;
@@ -17,13 +18,25 @@ public class GameController : MonoBehaviour
 
     private async void EndGame()
     {
-
         await ChangeScene.Instance.StartGameOver();
         GameOverPanel.gameObject.SetActive(true);
     }
 
+    public void PauseGame()
+    {
+        AudioManager.Instance.PlayAudio(Sounds.UIClick);
+        Time.timeScale = 0f;
+        PausePanel.SetActive(true);
+    }
+    public void ContinueGame()
+    {
+        AudioManager.Instance.PlayAudio(Sounds.UIClick);
+        Time.timeScale = 1f;
+        PausePanel.SetActive(false);
+    }
     public void ReloadScene()
     {
+        Time.timeScale = 1f;
         AudioManager.Instance.PlayAudio(Sounds.UIClick);
         GameOverPanel.gameObject.SetActive(false);
         ChangeScene.Instance.ChangeSceneTransition("Bounce-Gameplay"); 
@@ -31,6 +44,7 @@ public class GameController : MonoBehaviour
     
     public void GoToMenu()
     {
+        Time.timeScale = 1f;
         AudioManager.Instance.PlayAudio(Sounds.UIClick);
         GameOverPanel.gameObject.SetActive(false);
         ChangeScene.Instance.ChangeSceneTransition("Bounce-Menu");
