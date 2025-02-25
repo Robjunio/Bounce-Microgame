@@ -6,6 +6,7 @@ using UnityEngine;
 public class UIScoreManager : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _scoreText;
+
     private int _score;
 
     private Coroutine TextCoroutine;
@@ -27,14 +28,22 @@ public class UIScoreManager : MonoBehaviour
         UpdateText();
     }
 
+
+    private void SendFinalResult()
+    {
+        GameController.Instance.OnScoreResult(_score, PlayerPrefs.GetInt("Score", 0));
+    }
+
     private void Start()
     {
         GameController.Instance.HitTheZone += UpdateScore;
+        GameController.Instance.Error += SendFinalResult;
     }
 
     private void OnDisable()
     {
         GameController.Instance.HitTheZone -= UpdateScore;
+        GameController.Instance.Error -= SendFinalResult;
     }
 
     IEnumerator GetTheTextBigger()

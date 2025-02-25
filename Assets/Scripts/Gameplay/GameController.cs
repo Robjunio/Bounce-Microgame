@@ -1,10 +1,9 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    [SerializeField] private GameObject GameOverPanel;
+    [SerializeField] private GameOverUI GameOverPanel;
     public static GameController Instance;
 
     public Action HitTheZone;
@@ -16,27 +15,37 @@ public class GameController : MonoBehaviour
         Error += EndGame;
     }
 
-    private void EndGame()
+    private async void EndGame()
     {
-        StartCoroutine(EndGameCoroutine());
+
+        await ChangeScene.Instance.StartGameOver();
+        GameOverPanel.gameObject.SetActive(true);
     }
 
     public void ReloadScene()
     {
-        GameOverPanel.SetActive(false);
+        AudioManager.Instance.PlayAudio(Sounds.UIClick);
+        GameOverPanel.gameObject.SetActive(false);
         ChangeScene.Instance.ChangeSceneTransition("Bounce-Gameplay"); 
     }
     
     public void GoToMenu()
     {
-        GameOverPanel.SetActive(false);
+        AudioManager.Instance.PlayAudio(Sounds.UIClick);
+        GameOverPanel.gameObject.SetActive(false);
         ChangeScene.Instance.ChangeSceneTransition("Bounce-Menu");
     }
 
-    IEnumerator EndGameCoroutine()
+
+    public void OnScoreResult(int score, int maxScore)
     {
-        yield return ChangeScene.Instance.StartGameOver();
-        GameOverPanel.SetActive(true);
+        if(score > maxScore) {
+            GameOverPanel.SetNewBestScore(score);
+        }
+        else
+        {
+            GameOverPanel.SetNewScore(score, maxScore);
+        }
     }
     
 }

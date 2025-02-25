@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class BallMovement : MonoBehaviour
 {
+    [SerializeField] private ParticleSystem _particleSystem;
+    private ParticleSystem.EmitParams _emitParams;
+
     [SerializeField] private float _amplitude;
     [SerializeField] private float _frequency;
 
@@ -16,6 +19,8 @@ public class BallMovement : MonoBehaviour
     {
         GameController.Instance.Error += LooseGame;
         TryGetComponent(out _collider2D);
+
+        _emitParams = new ParticleSystem.EmitParams();
     }
 
     private void Update()
@@ -25,6 +30,7 @@ public class BallMovement : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 CheckIfHitTheArea();
+                EmitTouchEffect(Input.mousePosition);
             }
         }
         else
@@ -32,6 +38,7 @@ public class BallMovement : MonoBehaviour
             if (Input.GetTouch(0).phase == TouchPhase.Began)
             {
                 CheckIfHitTheArea();
+                EmitTouchEffect(Input.GetTouch(0).position);
             }
         }
     }
@@ -46,6 +53,7 @@ public class BallMovement : MonoBehaviour
         if (hit.collider != null)
         {
             _dir = !_dir;
+            AudioManager.Instance.PlayAudio(Sounds.Click);
             GameController.Instance.HitTheZone?.Invoke();
 
             if (_frequency < 0.05)
@@ -60,8 +68,19 @@ public class BallMovement : MonoBehaviour
         else
         {
             loose = true;
+
+            AudioManager.Instance.PlayAudio(Sounds.Error);
             GameController.Instance.Error?.Invoke();
         }
+    }
+
+    private void EmitTouchEffect(Vector3 touchPos)
+    {
+        var touchToCamera = Camera.main.ScreenToWorldPoint(touchPos);
+        touchToCamera.z = 0;
+
+        _emitParams.position = touchToCamera;
+        _particleSystem.Emit(_emitParams, 1);
     }
 
     private void FixedUpdate()

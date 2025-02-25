@@ -1,4 +1,5 @@
-using System.Collections;
+using DG.Tweening;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,7 +7,6 @@ using UnityEngine.SceneManagement;
 public class ChangeScene : MonoBehaviour
 {
     [SerializeField] private GameObject transitionObj;
-    private Animator transitionAnimator;
     [SerializeField] private TextMeshProUGUI text;
     
     private const string FadeIn = "FadeIn";
@@ -29,67 +29,64 @@ public class ChangeScene : MonoBehaviour
         }
     }
 
-    private void Start()
+    public async void StartGame()
     {
-        transitionAnimator = GetComponent<Animator>();
+        await StartGameWithTransition();
     }
 
-    public void StartGame()
+    public async void ChangeSceneTransition(string scene)
     {
-        StartCoroutine(StartGameWithTransition());
+        await ChangeSceneWithTransition(scene);
     }
 
-    public void ChangeSceneTransition(string scene)
+    private async Task StartGameWithTransition()
     {
-        StartCoroutine(ChangeSceneWithTransition(scene));
-    }
+        await FadeTransition(FadeIn);
 
-    IEnumerator StartGameWithTransition()
-    {
-        yield return FadeTransition(FadeIn);
-        
         text.gameObject.SetActive(true);
-        
-        transitionObj.SetActive(true);
-        transitionAnimator.Play("Idle");
-        
-        yield return SceneManager.LoadSceneAsync("Bounce-Gameplay");
-        
+
+        await LoadSceneAsync("Bounce-Gameplay");
+
         text.gameObject.SetActive(false);
 
-        yield return FadeTransition(FadeOut);
+        await FadeTransition(FadeOut);
     }
 
-    public IEnumerator StartGameOver()
+    public async Task StartGameOver()
     {
-        yield return FadeTransition(FadeIn);
+        await FadeTransition(FadeIn);
     }
 
-    IEnumerator ChangeSceneWithTransition(string scene)
+    private async Task ChangeSceneWithTransition(string scene)
     {
         text.gameObject.SetActive(true);
-        
+
         transitionObj.SetActive(true);
-        transitionAnimator.Play("Idle");
-        
-        yield return SceneManager.LoadSceneAsync(scene);
-        
+
+        await LoadSceneAsync(scene);
+
         text.gameObject.SetActive(false);
-        
-        yield return FadeTransition(FadeOut);
+
+        await FadeTransition(FadeOut);
     }
-    
-    
-    IEnumerator FadeTransition(string type)
+
+    private async Task LoadSceneAsync(string scene)
+    {
+        AsyncOperation operation = SceneManager.LoadSceneAsync(scene);
+        var tcs = new TaskCompletionSource<bool>();
+
+        operation.completed += _ => tcs.SetResult(true);
+
+        await tcs.Task;
+    }
+
+
+    private async Task FadeTransition(string type)
     {
         transitionObj.SetActive(true);
-        transitionAnimator.Play(type);
 
-        while ((transitionAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime) % 1 < 0.99f)
-        {
-            yield return null;
-        }
+        await transitionObj.transform.DOScale(type == FadeIn ? 250 : 0, 1f).AsyncWaitForCompletion();
 
-        transitionObj.SetActive(false);
+        transitionObj.SetActive(type == FadeIn ? true : false);
     }
 }
